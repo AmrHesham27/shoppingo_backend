@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       minlength: 6,
       trim: true,
+      required: true,
     },
     email: {
       type: String,
@@ -17,6 +18,7 @@ const userSchema = new mongoose.Schema(
       validate(value) {
         if (!validator.isEmail(value)) throw new Error("invalid email format");
       },
+      required: true,
     },
     tokens: [
       {
@@ -26,15 +28,35 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    name: {
+      type: String,
+      trim: true,
+      minlength: 6,
+    },
+    phone: {
+      type: String,
+      trim: true,
+      minlength: 8,
+    },
+    gender: {
+      enum: ["male", "female", "other"],
+    },
+    birthDate: {
+      type: Date,
+    },
+    location: {
+      type: String,
+      trim: true,
+      minlength: 10,
+    },
+    ordersIds: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true }
 );
-/* //virtual relation with properties 
-userSchema.virtual("agentProps", {
-    ref:"Property",
-    localField:"_id",
-    foreignField:"agentId"
-}) */
 
 // do not send secret data to user
 userSchema.methods.toJSON = function () {
