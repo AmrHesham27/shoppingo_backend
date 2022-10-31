@@ -24,6 +24,26 @@ class User {
     }
   };
 
+  static editUser = async (req, res) => {
+    try {
+      let user = req.user;
+      let editables = ["name", "phone", "gender", "birthDate", "location"];
+      editables.forEach((i) => {
+        if (req.body[i]) user[i] = req.body[i];
+      });
+      await user.save();
+      res
+        .status(200)
+        .send({ apiStatus: true, data: user, message: "user was edited" });
+    } catch (e) {
+      res.status(500).send({
+        apiStatus: false,
+        data: e.message,
+        message: "could not edit user",
+      });
+    }
+  };
+
   static login = async (req, res) => {
     try {
       let user = await userModel.loginUser(req.body.email, req.body.password);
@@ -110,15 +130,26 @@ class User {
   static getUserOrders = async (req, res) => {
     try {
       let user = req.user;
-      let skip;
-      !req.params.page ? (skip = (req.params.page - 1) * 5) : (skip = 0);
+      let currentPage = 1;
+      if (req.params.page) currentPage = req.params.page;
+      let skip = (currentPage - 1) * 5;
+      let itemsCount = orderModel.count({ userId: user._id });
+      let pagesNumber = Math.ceil(itemsCount / 5);
+
       const orders = await orderModel.find(
         { userId: user._id },
         { skip, limit: 5 }
       );
+      const data = {
+        data: orders,
+        itemsCount,
+        pagesNumber,
+        itemsPerPage: 5,
+        currentPage,
+      };
       res.status(200).send({
         apiStatus: true,
-        data: orders,
+        data: data,
         message: "orders were fetched",
       });
     } catch (e) {
