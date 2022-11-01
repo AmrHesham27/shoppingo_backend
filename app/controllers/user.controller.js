@@ -26,15 +26,16 @@ class User {
 
   static editUser = async (req, res) => {
     try {
-      let user = req.user;
+      let user = req.user._doc;
+      let newUser = { ...user };
       let editables = ["name", "phone", "gender", "birthDate", "location"];
       editables.forEach((i) => {
-        if (req.body[i]) user[i] = req.body[i];
+        if (req.body[i] !== "") newUser[i] = req.body[i];
       });
-      await user.save();
+      await userModel.updateOne({ _id: user._id }, { $set: newUser });
       res
         .status(200)
-        .send({ apiStatus: true, data: user, message: "user was edited" });
+        .send({ apiStatus: true, data: newUser, message: "user was edited" });
     } catch (e) {
       res.status(500).send({
         apiStatus: false,
