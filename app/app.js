@@ -2,11 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
+const REACT_URL = require("../REACT_URL");
 
 const app = express();
 
 const corsOptions = {
-  origin: "*",
+  origin: REACT_URL,
   credentials: true,
   optionSuccessStatus: 200,
 };
