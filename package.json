@@ -10,5 +10,9 @@
     "otp-generator": "^4.0.0",
     "stripe": "^10.15.0",
     "validator": "^13.7.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "heroku-postbuild": "cd client && npm install && npm run build"
   }
 }

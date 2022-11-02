@@ -1,0 +1,124 @@
+footer {
+  width: 100%;
+  background-color: #f9f9f9;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr auto auto;
+  padding: 50px 7vw 0 7vw;
+  -moz-column-gap: 20px;
+       column-gap: 20px;
+  row-gap: 40px;
+}
+footer > * {
+  display: flex;
+  flex-direction: column;
+}
+footer .about {
+  grid-column: 1;
+  grid-row: 1;
+}
+footer .about img {
+  width: 100px;
+  cursor: pointer;
+}
+footer .explore {
+  grid-column: 2;
+  grid-row: 1;
+}
+footer .company {
+  grid-column: 3;
+  grid-row: 1;
+}
+footer .follow {
+  grid-column: 4;
+  grid-row: 1;
+}
+footer .download {
+  grid-column: 1/5;
+  grid-row: 2;
+  margin: 0 auto;
+  text-align: center;
+  padding-bottom: 1rem;
+}
+footer .download img {
+  width: 160px;
+  margin: 0 5px;
+  cursor: pointer;
+}
+footer .download > div {
+  display: flex;
+  flex-direction: row;
+}
+footer .footer {
+  grid-column: 1/5;
+  grid-row: 3;
+  border-top: 1px solid #dee2e6;
+  text-align: center;
+  padding: 1rem;
+}
+footer .icons {
+  display: flex;
+  flex-direction: row;
+}
+footer .icons .icon {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 5px;
+  transition: 0.3s ease;
+}
+footer .icons .icon:hover {
+  background-color: black;
+  color: white;
+}
+footer a {
+  padding: 0.25rem 0;
+  color: black !important;
+  text-decoration: none !important;
+}
+footer a:hover {
+  font-weight: 600;
+  text-decoration: underline !important;
+  color: black !important;
+}
+footer p {
+  margin-bottom: 0 !important;
+}
+
+@media only screen and (max-width: 992px) {
+  footer {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, auto);
+  }
+  footer .about {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  footer .explore {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  footer .company {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  footer .follow {
+    grid-column: 1;
+    grid-row: 4;
+  }
+  footer .download {
+    grid-column: 1;
+    grid-row: 5;
+  }
+  footer .download > div {
+    flex-direction: column;
+  }
+  footer .footer {
+    grid-column: 1;
+    grid-row: 6;
+  }
+}/*# sourceMappingURL=Footer.module.css.map */

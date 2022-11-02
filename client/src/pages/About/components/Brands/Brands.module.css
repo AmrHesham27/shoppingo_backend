@@ -1,0 +1,6 @@
+.card:hover {
+  overflow: hidden;
+  -webkit-animation: transform 1s ease;
+          animation: transform 1s ease;
+  transform: scale(1.08);
+}/*# sourceMappingURL=Brands.module.css.map */
