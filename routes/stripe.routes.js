@@ -2,14 +2,12 @@ const router = require("express").Router();
 const stripe = require("stripe")(process.env.STRIPE_KEY);
 const express = require("express");
 
-//const REACT_URL = require("../REACT_URL");
-
 router.post("/create-checkout-session", async (req, res) => {
   const session = await stripe.checkout.sessions.create({
     line_items: req.body["items"],
     mode: "payment",
-    success_url: `${process.env.WEBSITE_PORT}`,
-    cancel_url: `${process.env.WEBSITE_PORT}`,
+    success_url: `${process.env.REACT_PORT}`,
+    cancel_url: `${process.env.REACT_PORT}`,
   });
 
   try {
