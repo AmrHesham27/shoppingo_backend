@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 
 const corsOptions = {
-  origin: "*",
+  origin: "https://shopping-one-psi.vercel.app",
   credentials: true,
   optionSuccessStatus: 200,
 };
