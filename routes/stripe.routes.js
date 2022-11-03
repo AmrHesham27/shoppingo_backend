@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const stripe = require("stripe")(process.env.STRIPE_KEY);
 const express = require("express");
+const rawBody = require("../middleware/rawBody");
+const bodyParser = require("body-parser");
 
 router.post("/create-checkout-session", async (req, res) => {
   const session = await stripe.checkout.sessions.create({
@@ -26,27 +28,28 @@ router.post("/create-checkout-session", async (req, res) => {
 
 router.post(
   "/webhook",
-  express.raw({ type: "application/json" }),
-  (request, response) => {
-    let event = request.body;
-    // Only verify the event if you have an endpoint secret defined.
-    // Otherwise use the basic event deserialized with JSON.parse
-    if (endpointSecret) {
-      // Get the signature sent by Stripe
-      const signature = request.headers["stripe-signature"];
-      try {
-        event = stripe.webhooks.constructEvent(
-          request.body,
-          signature,
-          endpointSecret
-        );
-      } catch (err) {
-        console.log(`⚠️  Webhook signature verification failed.`, err.message);
-        return response.sendStatus(400);
-      }
+  bodyParser.raw({ type: "application/json" }),
+  async (request, response) => {
+    let payload = request.body;
+    const endpointSecret = process.env.STRIPE_HOOK_KEY;
+
+    // verify the endpoint
+    const signature = request.headers["stripe-signature"];
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        payload,
+        signature,
+        endpointSecret
+      );
+    } catch (err) {
+      console.log(`⚠️  Webhook signature verification failed.`, err.message);
+      return response.sendStatus(400);
     }
 
     // Handle the event
+    console.log(event);
+    console.log(event.type);
     switch (event.type) {
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object;
@@ -65,8 +68,6 @@ router.post(
         // Unexpected event type
         console.log(`Unhandled event type ${event.type}.`);
     }
-
-    // Return a 200 response to acknowledge receipt of the event
     response.send();
   }
 );
