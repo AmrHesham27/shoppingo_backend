@@ -1,8 +1,6 @@
 const router = require("express").Router();
 const stripe = require("stripe")(process.env.STRIPE_KEY);
-const express = require("express");
-const rawBody = require("../middleware/rawBody");
-const bodyParser = require("body-parser");
+const orderModel = require("../models/order.model");
 
 router.post("/create-checkout-session", async (req, res) => {
   const session = await stripe.checkout.sessions.create({
@@ -10,6 +8,7 @@ router.post("/create-checkout-session", async (req, res) => {
     mode: "payment",
     success_url: `${process.env.REACT_PORT}`,
     cancel_url: `${process.env.REACT_PORT}`,
+    customer_email: req.body["email"],
   });
 
   try {
@@ -26,51 +25,44 @@ router.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-router.post(
-  "/webhook",
-  bodyParser.raw({ type: "application/json" }),
-  async (request, response) => {
-    let payload = request.body;
-    const endpointSecret = process.env.STRIPE_HOOK_KEY;
-
-    // verify the endpoint
-    const signature = request.headers["stripe-signature"];
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        endpointSecret
-      );
-    } catch (err) {
-      console.log(`⚠️  Webhook signature verification failed.`, err.message);
-      return response.sendStatus(400);
-    }
-
-    // Handle the event
-    console.log(event);
-    console.log(event.type);
-    switch (event.type) {
-      case "payment_intent.succeeded":
-        const paymentIntent = event.data.object;
-        console.log(
-          `PaymentIntent for ${paymentIntent.amount} was successful!`
-        );
-        // Then define and call a method to handle the successful payment intent.
-        // handlePaymentIntentSucceeded(paymentIntent);
-        break;
-      case "payment_method.attached":
-        const paymentMethod = event.data.object;
-        // Then define and call a method to handle the successful attachment of a PaymentMethod.
-        // handlePaymentMethodAttached(paymentMethod);
-        break;
-      default:
-        // Unexpected event type
-        console.log(`Unhandled event type ${event.type}.`);
-    }
-    response.send();
+router.post("/webhook", async (request, response) => {
+  // verify the endpoint
+  const signature = request.headers["stripe-signature"];
+  const endpointSecret = process.env.STRIPE_HOOK_KEY;
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      request.rawBody,
+      signature,
+      endpointSecret
+    );
+  } catch (err) {
+    console.log(`⚠️  Webhook signature verification failed.`, err.message);
+    return response.sendStatus(400);
   }
-);
+
+  // Handle the event (add order to db)
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const { line_items } = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ["line_items"],
+    });
+    const products = line_items["data"].map((item) => {
+      return {
+        productId: item.id,
+        quantity: item.quantity,
+      };
+    });
+    const newOrder = new orderModel({
+      email: event["data"]["object"]["customer_email"],
+      products,
+      totalAmount: event["data"]["object"]["amount_total"],
+    });
+    await newOrder.save();
+  }
+
+  response.send();
+});
 
 module.exports = {
   path: "",
