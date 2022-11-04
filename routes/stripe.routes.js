@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const stripe = require("stripe")(process.env.STRIPE_KEY);
 const orderModel = require("../models/order.model");
+const productModel = require("../models/product.model");
+
 const auth = require("../middleware/authUser");
 
 router.post("/create-checkout-session", auth, async (req, res) => {
@@ -48,15 +50,26 @@ router.post("/webhook", async (request, response) => {
     const { line_items } = await stripe.checkout.sessions.retrieve(session.id, {
       expand: ["line_items"],
     });
-    const products = line_items["data"].map((item) => {
-      return {
-        productId: item.id,
+
+    let productsObject = {};
+    let priceIds = [];
+
+    line_items["data"].forEach((item) => {
+      productsObject[item.id] = {
+        data: null,
         quantity: item.quantity,
       };
+      priceIds.push(item.id);
     });
+
+    let productsData = await productModel.find({ priceId: { $in: priceIds } });
+    productsData.forEach((product) => {
+      productsObject[product.priceId]["data"] = product;
+    });
+
     const newOrder = new orderModel({
       email: event["data"]["object"]["customer_email"],
-      products,
+      products: JSON.stringify(productsObject),
       totalAmount: event["data"]["object"]["amount_total"],
     });
     await newOrder.save();

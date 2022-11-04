@@ -84,63 +84,19 @@ class User {
     });
   };
 
-  static addOrder = async (req, res) => {
-    try {
-      let user = req.user;
-      let order = new orderModel({
-        userId: user._id,
-        products: req.body.products,
-        totalAmount: req.body.totalAmount,
-      });
-      await order.save();
-      res.status(200).send({
-        apiStatus: true,
-        data: order,
-        message: "order was added successfully",
-      });
-    } catch (e) {
-      res.status(500).send({
-        apiStatus: false,
-        data: e.message,
-        message: "could not add order",
-      });
-    }
-  };
-
-  static cancelOrder = async (req, res) => {
-    try {
-      let user = req.user;
-      let order = await orderModel.findById(req.body.orderId);
-      if (order.userId !== user._id)
-        throw new Error("this order does not exist");
-      order.status = "canceled";
-      await order.save();
-      res.status(200).send({
-        apiStatus: true,
-        message: "order was canceled",
-      });
-    } catch (e) {
-      res.status(500).send({
-        apiStatus: false,
-        data: e.message,
-        message: "could not cancel order",
-      });
-    }
-  };
-
   static getUserOrders = async (req, res) => {
     try {
       let user = req.user;
       let currentPage = 1;
       if (req.params.page) currentPage = req.params.page;
       let skip = (currentPage - 1) * 5;
-      let itemsCount = orderModel.count({ userId: user._id });
+      let itemsCount = await orderModel.count({ email: user.email });
       let pagesNumber = Math.ceil(itemsCount / 5);
 
-      const orders = await orderModel.find(
-        { userId: user._id },
-        { skip, limit: 5 }
-      );
+      const orders = await orderModel
+        .find({ email: user.email })
+        .skip(skip)
+        .limit(5);
       const data = {
         data: orders,
         itemsCount,
