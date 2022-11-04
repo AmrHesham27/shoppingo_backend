@@ -9,7 +9,7 @@ router.post("/create-checkout-session", auth, async (req, res) => {
   const session = await stripe.checkout.sessions.create({
     line_items: req.body["items"],
     mode: "payment",
-    success_url: `${process.env.REACT_PORT}`,
+    success_url: `${process.env.REACT_PORT}/dashboard/orders`,
     cancel_url: `${process.env.REACT_PORT}`,
     customer_email: req.user.email,
   });
