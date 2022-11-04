@@ -95,6 +95,7 @@ class User {
 
       const orders = await orderModel
         .find({ email: user.email })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(5);
       const data = {
