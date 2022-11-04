@@ -55,14 +55,15 @@ router.post("/webhook", async (request, response) => {
     let priceIds = [];
 
     line_items["data"].forEach((item) => {
-      productsObject[item.id] = {
+      productsObject[item["price"]["id"]] = {
         data: null,
         quantity: item.quantity,
       };
-      priceIds.push(item.id);
+      priceIds.push(item["price"]["id"]);
     });
 
     let productsData = await productModel.find({ priceId: { $in: priceIds } });
+
     productsData.forEach((product) => {
       productsObject[product.priceId]["data"] = product;
     });
