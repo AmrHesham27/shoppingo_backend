@@ -6,15 +6,17 @@ const productModel = require("../models/product.model");
 const auth = require("../middleware/authUser");
 
 router.post("/create-checkout-session", auth, async (req, res) => {
-  const session = await stripe.checkout.sessions.create({
-    line_items: req.body["items"],
-    mode: "payment",
-    success_url: `${process.env.REACT_PORT}/dashboard/orders/1`,
-    cancel_url: `${process.env.REACT_PORT}`,
-    customer_email: req.user.email,
-  });
-
   try {
+    console.log(req.body["items"]);
+
+    const session = await stripe.checkout.sessions.create({
+      line_items: req.body["items"],
+      mode: "payment",
+      success_url: `${process.env.REACT_PORT}/dashboard/orders/1`,
+      cancel_url: `${process.env.REACT_PORT}`,
+      customer_email: req.user.email,
+    });
+
     res.status(200).send({
       data: session.url,
       apiStatus: true,
