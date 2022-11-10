@@ -7,8 +7,6 @@ const auth = require("../middleware/authUser");
 
 router.post("/create-checkout-session", auth, async (req, res) => {
   try {
-    console.log(req.body["items"]);
-
     const session = await stripe.checkout.sessions.create({
       line_items: req.body["items"],
       mode: "payment",
